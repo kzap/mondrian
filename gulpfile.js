@@ -9,6 +9,7 @@ var less = require('gulp-less');
 var replace = require('gulp-replace');
 var merge = require('merge-stream');
 var haml = require('gulp-haml');
+var fs = require('fs');
 
 // set paths
 var path = {
@@ -32,9 +33,60 @@ var path = {
 
 // set of tasks to be run
 var tasks = [
-   'less',
-   'haml'
+  'appcache',
+  'less',
+  'haml'
 ];
+
+var getGitHeadSHA = function(cb) {
+  fs.readFile('.git/HEAD', 'utf8', function(err, ref) {
+    if (err || typeof ref !== "string") {
+      console.log('Missing or malformed git HEAD - SHA unavailable.');
+
+      return cb(null);
+    }
+    getGitSHAFromRef('.git/' + ref.slice(4, ref.length).trim(), cb);
+  });
+}
+
+var getGitSHAFromRef = function(ref, cb) {
+  fs.readFile(ref, 'utf8', function(err, sha) {
+    if (err || typeof sha !== "string") {
+      console.log('Missing or malformed git branch SHA.');
+
+      return cb(null);
+    }
+
+    cb(sha.trim());
+  });
+}
+
+gulp.task('appcache', function() {
+  fs.readFile(path.build.app + '/mondrian.appcache', 'utf8', function(err, currentFile) {
+    // default buildno
+    buildNum = 1
+    // get existing buildno
+    if (currentFile) {
+      buildNum = parseInt(/^# Revision (\d+)$/m.exec(currentFile)[1]) + 1;
+    }
+
+    var header = 'CACHE MANIFEST\n# Revision ' + buildNum + '\n'
+    getGitHeadSHA(function(sha) {
+      header += '# SHA ' + sha + '\n'
+      header += '# Date: ' + new Date().toDateString() + '\n'
+      fs.readFile(path.src.app+'/mondrian.appcache', 'utf8', function(err, data) {
+        if (err || typeof data !== "string") {
+          console.log("'" + path.src.app + "/mondrian.appcache' is missing or malformed.")
+          console.log("Unable to compile appcache.")
+
+          return
+        }
+
+        fs.writeFile(path.build.app + '/mondrian.appcache', header + data);
+      });
+    });
+  });
+});
 
 gulp.task('less', function() {
   var sources = {
