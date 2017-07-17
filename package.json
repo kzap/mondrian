@@ -8,6 +8,8 @@
   },
   "scripts": {
     "start": "coffee server.coffee",
+    "build": "npm run build:gulp",
+    "build:gulp": "gulp",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -21,15 +23,29 @@
   },
   "homepage": "https://github.com/artursapek/mondrian",
   "dependencies": {
-    "connect": "~2.12.0"
+    "merge-stream": "^1.0.1"
   },
   "devDependencies": {
-    "coffee-script": "~1.6.3",
-    "connect": "~2.12.0",
     "cake": "~0.1.1",
-    "js-yaml": "~3.0.1",
-    "less": "~1.6.1",
+    "coffee-script": "~1.6.3",
     "colors": "~0.6.2",
-    "haml": "~0.4.3"
+    "connect": "~2.12.0",
+    "gulp": "^3.9.1",
+    "gulp-autoprefixer": "^4.0.0",
+    "gulp-clean-css": "^3.7.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-concat-util": "^0.5.5",
+    "gulp-css-rebase-urls": "0.0.5",
+    "gulp-less": "^3.3.2",
+    "gulp-minify-css": "^1.2.4",
+    "gulp-plumber": "^1.1.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-replace": "^0.6.1",
+    "gulp-rework": "^1.2.0",
+    "gulp-sourcemaps": "^2.6.0",
+    "gulp-uglify": "^3.0.0",
+    "haml": "~0.4.3",
+    "js-yaml": "~3.0.1",
+    "less": "^2.7.2"
   }
 }
