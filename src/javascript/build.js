@@ -1,0 +1,1 @@
+import coffee from '../coffee/extensions/prototype-extensions'
