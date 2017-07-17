@@ -7,7 +7,7 @@
     "test": "tests"
   },
   "scripts": {
-    "start": "coffee server.coffee",
+    "start": "npm run build:gulp && cake server",
     "build": "npm run build:gulp",
     "build:gulp": "gulp",
     "test": "echo \"Error: no test specified\" && exit 1"
