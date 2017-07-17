@@ -9,7 +9,10 @@ var less = require('gulp-less');
 var replace = require('gulp-replace');
 var merge = require('merge-stream');
 var haml = require('gulp-haml');
+var coffee = require('gulp-coffee');
 var fs = require('fs');
+var gutil = require('gulp-util');
+var jsyaml = require('js-yaml');
 
 // set paths
 var path = {
@@ -25,6 +28,7 @@ var path = {
     'base': './build',
     'css': './build/assets/style',
     'fonts': './build/assets/fonts',
+    'javascript': './build/assets/javascript',
     'images': './build/assets/images',
     'vendor': './build/assets/vendor'
   },
@@ -34,9 +38,45 @@ var path = {
 // set of tasks to be run
 var tasks = [
   'appcache',
+  'coffee',
   'less',
   'haml'
 ];
+
+var getCoffeeFiles = function(keys) {
+  var paths, src;
+  paths = [];
+  src = jsyaml.safeLoad(fs.readFileSync('./build.yml', 'utf8')).src;
+  if (keys != null) {
+    src = src.filter(function(module) {
+      return keys.indexOf(Object.keys(module)[0]) > -1;
+    });
+  }
+
+  src.forEach(function(module) {
+    var dir, fn, fns, key;
+    key = Object.keys(module)[0];
+    fns = module[key];
+    if (typeof fns[0] === 'object' && fns[0]._dir !== void 0) {
+      dir = fns[0]._dir;
+      fns = fns.slice(1);
+    } else {
+      dir = key;
+    }
+
+    return paths = paths.concat((function() {
+      var i, len, results;
+      results = [];
+      for (i = 0, len = fns.length; i < len; i++) {
+        fn = fns[i];
+        results.push("src/coffee/" + (dir || '') + (dir ? '/' : '') + fn + ".coffee");
+      }
+      return results;
+    })());
+  });
+
+  return paths;
+};
 
 var getGitHeadSHA = function(cb) {
   fs.readFile('.git/HEAD', 'utf8', function(err, ref) {
@@ -88,6 +128,16 @@ gulp.task('appcache', function() {
   });
 });
 
+gulp.task('coffee', function() {
+  var coffeeFiles = getCoffeeFiles();
+
+  return gulp.src(coffeeFiles)
+    .pipe(concat('build.js'))
+    .pipe(coffee({bare:true}).on('error', gutil.log))
+    .pipe(gulp.dest(path.build.javascript))
+  ;
+});
+
 gulp.task('less', function() {
   var sources = {
     'contributing.less': 'contributing.css',
@@ -109,8 +159,8 @@ gulp.task('less', function() {
       .pipe(sourcemaps.write('.'))
       .pipe(autoprefixer('last 2 version', 'safari 5', 'ie 8', 'ie 9'))
       .pipe(rename(destFileName))
-      .pipe(gulp.dest(path.build.css)
-    );
+      .pipe(gulp.dest(path.build.css))
+    ;
     streams.push(stream);
   });
 
@@ -132,8 +182,8 @@ gulp.task('haml', function() {
       })
       .pipe(haml())
       .pipe(rename(destFileName))
-      .pipe(gulp.dest(path.build.base)
-    );
+      .pipe(gulp.dest(path.build.base))
+    ;
     streams.push(stream);
   });
 
